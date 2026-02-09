@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Admin - Moderation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #faf7f2;
+            --charcoal: #2b2d2e;
+            --sage: #8b9a8b;
+            --gold: #d4af37;
+            --paper: #f5f1ea;
+            --shadow: rgba(43, 45, 46, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Pro', serif;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--paper) 100%);
+            color: var(--charcoal);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--charcoal);
+            color: var(--cream);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .login-container {
+            max-width: 500px;
+            margin: 4rem auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .login-container h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(139, 154, 139, 0.2);
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--sage);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab.active {
+            color: var(--charcoal);
+            border-bottom-color: var(--gold);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px var(--shadow);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--sage);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+
+        .posts-list {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .admin-post {
+            background: white;
+            padding: 2rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px var(--shadow);
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .admin-post.pending {
+            border-left: 4px solid var(--gold);
+        }
+
+        .admin-post.approved {
+            border-left: 4px solid #4a7;
+        }
+
+        .admin-post.rejected {
+            border-left: 4px solid #c33;
+            opacity: 0.7;
+        }
+
+        .post-photo-thumb {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .post-content {
+            flex: 1;
+        }
+
+        .post-meta {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--sage);
+        }
+
+        .post-meta strong {
+            color: var(--charcoal);
+        }
+
+        .post-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+        }
+
+        .post-status {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 2px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .post-status.pending {
+            background: #ffd;
+            color: #886;
+        }
+
+        .post-status.approved {
+            background: #dfd;
+            color: #363;
+        }
+
+        .post-status.rejected {
+            background: #fdd;
+            color: #833;
+        }
+
+        .post-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            background: var(--charcoal);
+            color: var(--cream);
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: var(--sage);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-approve {
+            background: #4a7;
+        }
+
+        .btn-approve:hover {
+            background: #5c8;
+        }
+
+        .btn-reject {
+            background: #c33;
+        }
+
+        .btn-reject:hover {
+            background: #d44;
+        }
+
+        .btn-delete {
+            background: #666;
+        }
+
+        .btn-delete:hover {
+            background: #888;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--charcoal);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid rgba(139, 154, 139, 0.3);
+            border-radius: 2px;
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--sage);
+        }
+
+        .error-message {
+            background: #fee;
+            border: 2px solid #fcc;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            background: #efe;
+            border: 2px solid #cfc;
+            color: #363;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--sage);
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .admin-post {
+                grid-template-columns: 1fr;
+            }
+
+            .post-actions {
+                flex-direction: row;
+            }
+
+            .logout-btn {
+                position: static;
+                margin: 1rem auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <div class="login-container">
+            <h2>Admin Login</h2>
+            <div id="loginMessage"></div>
+            <form id="loginForm" onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password:</label>
+                    <input type="password" id="adminPassword" required placeholder="Enter admin password">
+                </div>
+                <button type="submit" class="btn" style="width: 100%;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" style="display: none;">
+        <div class="header" style="position: relative;">
+            <h1>Memorial Admin</h1>
+            <p>Manage and moderate submitted memories</p>
+            <button class="btn logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="container">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingCount">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="approvedCount">0</div>
+                    <div class="stat-label">Approved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="rejectedCount">0</div>
+                    <div class="stat-label">Rejected</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('pending')">Pending Review</button>
+                <button class="tab" onclick="switchTab('approved')">Approved</button>
+                <button class="tab" onclick="switchTab('rejected')">Rejected</button>
+                <button class="tab" onclick="switchTab('all')">All Posts</button>
+            </div>
+
+            <div id="pendingTab" class="tab-content active">
+                <div id="pendingPosts" class="posts-list"></div>
+            </div>
+
+            <div id="approvedTab" class="tab-content">
+                <div id="approvedPosts" class="posts-list"></div>
+            </div>
+
+            <div id="rejectedTab" class="tab-content">
+                <div id="rejectedPosts" class="posts-list"></div>
+            </div>
+
+            <div id="allTab" class="tab-content">
+                <div id="allPosts" class="posts-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // TODO: Replace with your Firebase config (same as main page)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Global functions
+        window.login = login;
+        window.logout = logout;
+        window.switchTab = switchTab;
+        window.approvePost = approvePost;
+        window.rejectPost = rejectPost;
+        window.deletePost = deletePost;
+
+        let allPosts = {};
+        let isLoggedIn = sessionStorage.getItem('adminLoggedIn') === 'true';
+
+        if (isLoggedIn) {
+            showDashboard();
+        }
+
+        // Login
+        async function login(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById('adminPassword').value;
+            const messageDiv = document.getElementById('loginMessage');
+
+            const adminPasswordRef = ref(database, 'config/adminPassword');
+            onValue(adminPasswordRef, (snapshot) => {
+                const correctPassword = snapshot.val();
+                
+                if (password === correctPassword) {
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    showDashboard();
+                } else {
+                    messageDiv.innerHTML = '<div class="error-message">Incorrect password</div>';
+                }
+            }, { onlyOnce: true });
+        }
+
+        // Logout
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            loadPosts();
+        }
+
+        // Load all posts
+        function loadPosts() {
+            const postsRef = ref(database, 'posts');
+            
+            onValue(postsRef, (snapshot) => {
+                allPosts = {};
+                
+                snapshot.forEach((childSnapshot) => {
+                    allPosts[childSnapshot.key] = {
+                        id: childSnapshot.key,
+                        ...childSnapshot.val()
+                    };
+                });
+
+                updateStats();
+                displayPosts();
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            const posts = Object.values(allPosts);
+            const pending = posts.filter(p => p.status === 'pending').length;
+            const approved = posts.filter(p => p.status === 'approved').length;
+            const rejected = posts.filter(p => p.status === 'rejected').length;
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+            document.getElementById('totalCount').textContent = posts.length;
+        }
+
+        // Display posts in tabs
+        function displayPosts() {
+            const posts = Object.values(allPosts);
+            
+            displayPostList('pendingPosts', posts.filter(p => p.status === 'pending'));
+            displayPostList('approvedPosts', posts.filter(p => p.status === 'approved'));
+            displayPostList('rejectedPosts', posts.filter(p => p.status === 'rejected'));
+            displayPostList('allPosts', posts);
+        }
+
+        function displayPostList(containerId, posts) {
+            const container = document.getElementById(containerId);
+            
+            if (posts.length === 0) {
+                container.innerHTML = '<div class="empty-state">No posts in this category</div>';
+                return;
+            }
+
+            // Sort by date (newest first)
+            posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            container.innerHTML = posts.map(post => `
+                <div class="admin-post ${post.status}">
+                    ${post.photoUrl ? `
+                        <img src="${post.photoUrl}" alt="Post photo" class="post-photo-thumb">
+                    ` : '<div style="width: 150px;"></div>'}
+                    
+                    <div class="post-content">
+                        <div class="post-meta">
+                            <div><strong>Author:</strong> ${escapeHtml(post.author)}</div>
+                            <div><strong>Date:</strong> ${new Date(post.date).toLocaleDateString()}</div>
+                            <div><span class="post-status ${post.status}">${post.status}</span></div>
+                        </div>
+                        <div class="post-text">${escapeHtml(post.story)}</div>
+                    </div>
+
+                    <div class="post-actions">
+                        ${post.status === 'pending' ? `
+                            <button class="btn btn-approve" onclick="approvePost('${post.id}')">Approve</button>
+                            <button class="btn btn-reject" onclick="rejectPost('${post.id}')">Reject</button>
+                        ` : ''}
+                        ${post.status === 'approved' ? `
+                            <button class="btn btn-reject" onclick="rejectPost('${post.id}')">Unpublish</button>
+                        ` : ''}
+                        ${post.status === 'rejected' ? `
+                            <button class="btn btn-approve" onclick="approvePost('${post.id}')">Approve</button>
+                        ` : ''}
+                        <button class="btn btn-delete" onclick="deletePost('${post.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Approve post
+        async function approvePost(postId) {
+            if (!confirm('Approve this memory for public display?')) return;
+            
+            const postRef = ref(database, `posts/${postId}`);
+            await update(postRef, { status: 'approved' });
+        }
+
+        // Reject post
+        async function rejectPost(postId) {
+            if (!confirm('Reject/unpublish this memory?')) return;
+            
+            const postRef = ref(database, `posts/${postId}`);
+            await update(postRef, { status: 'rejected' });
+        }
+
+        // Delete post
+        async function deletePost(postId) {
+            if (!confirm('Permanently delete this post? This cannot be undone.')) return;
+            
+            const postRef = ref(database, `posts/${postId}`);
+            await remove(postRef);
+        }
+    </script>
+</body>
+</html>
